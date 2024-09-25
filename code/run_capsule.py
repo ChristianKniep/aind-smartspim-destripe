@@ -4,8 +4,7 @@ import os
 from datetime import datetime
 from glob import glob
 from pathlib import Path
-from time import time
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 import dask
 import numpy as np
@@ -160,7 +159,7 @@ def generate_data_processing(
         ],
         processor_full_name="Camilo Laiton",
         pipeline_url="https://github.com/AllenNeuralDynamics/aind-smartspim-pipeline",
-        pipeline_version="3.0.0",
+        pipeline_version="1.6.0",
     )
 
     processing = Processing(

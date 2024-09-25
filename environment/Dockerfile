@@ -12,17 +12,16 @@ SHELL ["conda", "run", "-n", "destriper", "/bin/bash", "-c"]
 # RUN conda install -c conda-forge awscli
 
 RUN pip install -U --no-cache-dir \
-    aind-large-scale-prediction==1.0.0 \
-    numpy==1.26.4 \
-    scipy==1.13.1 \
-    scikit-image==0.24.0 \
-    tifffile==2024.5.10 \
-    PyWavelets==1.6.0 \
-    tqdm==4.66.5 \
-    pathlib2 \
+    numpy==1.24.2 \
+    scipy==1.9.1 \
+    scikit-image==0.20.0 \
+    tifffile==2023.3.21 \
+    PyWavelets==1.4.1 \
+    tqdm==4.65.0 \
+    pathlib2==2.3.7.post1 \
     aind-data-schema==1.0.0 \
-    matplotlib==3.9.2 \
-    psutil==6.0.0 \
+    matplotlib==3.7.3 \
+    psutil==5.9.5 \
     BaSiCPy==1.1.0 \
     natsort==8.4.0 \
     imageio==2.35.1 \
