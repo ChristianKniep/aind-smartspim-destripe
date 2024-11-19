@@ -1,42 +1,24 @@
 FROM continuumio/miniconda3:23.9.0-0
 
-# --------------------- #
-#      METADATA         #
-# --------------------- #
-LABEL maintainer="Camilo Laiton <camilo.laiton@alleninstitute.org>" \
-      org.opencontainers.image.title="Image Preprocessing" \
-      org.opencontainers.image.description="Container for flatfield and stripe correction." \
-      org.opencontainers.image.version="0.0.4" \
-      org.opencontainers.image.licenses="MIT"
-
 ARG DEBIAN_FRONTEND=noninteractive
 
-# --------------------- #
-# SYSTEM DEPENDENCIES   #
-# --------------------- #
-RUN apt-get update && \
-    apt-get install -y gcc && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update
+RUN conda create -n destriper python=3.10 -y && conda clean -afy
+SHELL ["conda", "run", "-n", "destriper", "/bin/bash", "-c"]
 
-# --------------------- #
-#    CONDA ENV SETUP    #
-# --------------------- #
-RUN conda create -y -n destriper python=3.9 && \
-    conda run -n destriper pip install --no-cache-dir \
-        aind-large-scale-prediction==1.0.0 \
-        numpy==1.26.4 \
-        scipy==1.13.1 \
-        scikit-image==0.24.0 \
-        tifffile==2024.5.10 \
-        PyWavelets==1.6.0 \
-        tqdm==4.66.5 \
-        pathlib2 \
-        aind-data-schema==1.0.0 \
-        matplotlib==3.9.2 \
-        psutil==6.0.0 \
-        BaSiCPy==1.1.0 \
-        natsort==8.4.0 \
-        imageio==2.35.1 \
-        xarray_multiscale==2.1.0 && \
-    conda clean -afy
+RUN pip install -U --no-cache-dir \
+    numpy==1.24.2 \
+    scipy==1.9.1 \
+    scikit-image==0.20.0 \
+    tifffile==2023.3.21 \
+    PyWavelets==1.4.1 \
+    tqdm==4.65.0 \
+    pathlib2==2.3.7.post1 \
+    aind-data-schema==1.0.0 \
+    matplotlib==3.7.3 \
+    psutil==5.9.5 \
+    BaSiCPy==1.1.0 \
+    natsort==8.4.0 \
+    imageio==2.35.1
+    
+RUN pip install jax==0.4.13 jaxlib==0.4.13 --no-deps
