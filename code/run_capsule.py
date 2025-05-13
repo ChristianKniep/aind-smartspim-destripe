@@ -517,7 +517,7 @@ def run():
     parameters = {
         "input_path": input_channel_path,
         "output_path": output_path,
-        "workers": 32,
+        "workers": 16,
         "chunks": 1,
         "high_int_filt_params": cells_config,
         "low_int_filt_params": no_cells_config,
