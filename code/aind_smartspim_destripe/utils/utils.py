@@ -211,13 +211,13 @@ def get_code_ocean_cpu_limit():
         return co_cpus
     if aws_batch_job_id:
         return 1
-
+    
     try:
         with open("/sys/fs/cgroup/cpu/cpu.cfs_quota_us") as fp:
             cfs_quota_us = int(fp.read())
         with open("/sys/fs/cgroup/cpu/cpu.cfs_period_us") as fp:
             cfs_period_us = int(fp.read())
-
+        
         container_cpus = cfs_quota_us // cfs_period_us
 
     except FileNotFoundError as e:
@@ -236,12 +236,17 @@ def print_system_information(logger: logging.Logger):
     logger: logging.Logger
         Logger object
     """
-    co_memory = int(os.environ.get("CO_MEMORY"))
+    co_memory = os.environ.get("CO_MEMORY")
+    co_memory = int(co_memory) if co_memory else None
+    
     # System info
     sep = "=" * 40
     logger.info(f"{sep} Code Ocean Information {sep}")
     logger.info(f"Code Ocean assigned cores: {get_code_ocean_cpu_limit()}")
-    logger.info(f"Code Ocean assigned memory: {get_size(co_memory)}")
+
+    if co_memory:
+        logger.info(f"Code Ocean assigned memory: {get_size(co_memory)}")
+
     logger.info(f"Computation ID: {os.environ.get('CO_COMPUTATION_ID')}")
     logger.info(f"Capsule ID: {os.environ.get('CO_CAPSULE_ID')}")
     logger.info(f"Is pipeline execution?: {bool(os.environ.get('AWS_BATCH_JOB_ID'))}")

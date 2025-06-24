@@ -4,8 +4,7 @@ import os
 from datetime import datetime
 from glob import glob
 from pathlib import Path
-from time import time
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 import dask
 import numpy as np
@@ -160,7 +159,7 @@ def generate_data_processing(
         ],
         processor_full_name="Camilo Laiton",
         pipeline_url="https://github.com/AllenNeuralDynamics/aind-smartspim-pipeline",
-        pipeline_version="3.0.0",
+        pipeline_version="1.6.0",
     )
 
     processing = Processing(
@@ -413,8 +412,74 @@ def run():
                 output_directory=results_folder,
             )
 
-    else:
-        print(f"No channels to process in {BASE_PATH}")
+        flatfield, basicpy_darkfield, baseline = get_retrospective_flatfield_correction(
+            data_folder=data_folder,
+            flats_dir=metadata_flats_dir,
+            no_cells_config=no_cells_config,
+            cells_config=cells_config,
+            shading_parameters=shading_parameters,
+            logger=logger,
+        )
+        retrospective = True
+
+    shading_parameters["retrospective"] = retrospective
+
+    logger.info(f"Input channel path: {input_channel_path}")
+
+    if "derivatives" in str(input_channel_path):
+        raise ValueError(f"Unknown problem! Why this? {input_channel_path}")
+
+    parameters = {
+        "input_path": input_channel_path,
+        "output_path": output_path,
+        "workers": 16,
+        "chunks": 1,
+        "high_int_filt_params": cells_config,
+        "low_int_filt_params": no_cells_config,
+        "compression": 1,
+        "output_format": ".tiff",
+        "output_dtype": None,
+        "shadow_correction": {
+            "retrospective": retrospective,
+            "flatfield": flatfield,  # Estimated with basicpy or using the flats from the microscope
+            "darkfield": darkfield,  # Coming from the microscope
+            "tile_config": tile_config,
+        },
+    }
+    logger.info(f"parameters: {parameters}")
+
+    destriping_start_time = datetime.now()
+    if input_channel_path.is_dir():
+        logger.info(
+            f"Starting destriping and flatfielding with restrospective approach? {retrospective}"
+        )
+        destriper.batch_filter(**parameters)
+
+    destriping_end_time = datetime.now()
+
+    # Overwriting shadow correction estimated fields with shading parameters
+    # To save them in processing.json
+    parameters["shadow_correction"] = shading_parameters
+    generate_data_processing(
+        channel_name=channel_name,
+        destripe_version=__version__,
+        destripe_config=parameters,
+        start_time=destriping_start_time,
+        end_time=destriping_end_time,
+        output_directory=results_folder,
+    )
+
+    # Getting tracked resources and plotting image
+    utils.stop_child_process(profile_process)
+
+    if len(time_points):
+        utils.generate_resources_graphs(
+            time_points,
+            cpu_percentages,
+            memory_usages,
+            metadata_flats_dir,
+            "smartspim_destripe",
+        )
 
 
 if __name__ == "__main__":
